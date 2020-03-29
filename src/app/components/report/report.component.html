@@ -1,0 +1,53 @@
+<div class="modal-header">
+  <h4 class="modal-title">Report a member on Discord</h4>
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss(false)">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <form [formGroup]="report">
+    <div class="form-group">
+      <div class="d-flex justify-content-between align-items-center">
+        <label for="userCID">Offender CID</label>
+        <button class="btn btn-link" placement="auto"
+                ngbPopover="To enhance user security and privacy there is no feedback from the server with user details. This prevents a possible brute force enumeration to find user details."
+                popoverTitle="Why do I have to input a CID?">
+          <fa-icon icon="question-circle" size="lg"></fa-icon>
+        </button>
+      </div>
+      <input type="number" class="form-control" id="userCID" formControlName="cid" placeholder="1234567">
+      <small class="text-danger" *ngIf="!report.controls.cid.valid && report.controls.cid.errors.notLinked">This CID isn't linked to an account</small>
+    </div>
+    <div class="form-group">
+      <label for="typeDropdown">Type of report</label>
+      <div ngbDropdown>
+        <button class="btn btn-outline-primary" id="typeDropdown" type="button" ngbDropdownToggle>{{type || 'Select Type'}}</button>
+        <div ngbDropdownMenu aria-labelledby="dropdownBasic1">
+          <button ngbDropdownItem type="button" (click)="reportType = $event.target.innerText">Swearing</button>
+          <button ngbDropdownItem type="button" (click)="reportType = $event.target.innerText">Bullying</button>
+          <button ngbDropdownItem type="button" (click)="reportType = $event.target.innerText">Abuse / Harassment</button>
+          <button ngbDropdownItem type="button" (click)="reportType = $event.target.innerText">Inappropriate or Disruptive Behaviour</button>
+          <button ngbDropdownItem type="button" (click)="reportType = $event.target.innerText">Illegal Activities</button>
+          <button ngbDropdownItem type="button" (click)="reportType = $event.target.innerText">Other</button>
+        </div>
+      </div>
+    </div>
+    <div class="form-group" *ngIf="type === 'Other'">
+      <label for="otherType">Other type</label>
+      <input type="text" class="form-control" id="otherType" formControlName="type" placeholder="Some other report type">
+    </div>
+    <div class="form-group">
+      <label for="reportContent">Report Content</label>
+      <textarea rows="10" class="form-control" id="reportContent" aria-describedby="reportContentDesc" formControlName="content" placeholder="Descriptive details of report"></textarea>
+      <small id="reportContentDesc">Please be descriptive in your report, otherwise it may be discarded.</small>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-primary" (click)="submit()" [disabled]="!report.valid || loading$">
+    <span *ngIf="!loading$">Submit</span>
+    <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+      <span class="sr-only">Loading...</span>
+    </span>
+  </button>
+</div>

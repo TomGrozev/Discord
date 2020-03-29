@@ -1,0 +1,40 @@
+<div class="container mt-4">
+    <h1 class="display-4">Welcome {{userService.currentUserValue.first_name || userService.currentUserValue.cid}}</h1>
+    <hr>
+
+    <div class="card-columns" *ngIf="data">
+        <div class="card">
+            <div class="card-header">
+                New Reports
+            </div>
+            <div class="list-group list-group-flush" *ngIf="data.reports.length; else noReports">
+                <a class="list-group-item list-group-item-action" [routerLink]="['../reports', report._id]" *ngFor="let report of data.reports"><strong><i>{{userService.getName(
+                    report.subject)}}</i></strong> was reported on
+                    <strong>{{report.createdAt.toLocaleDateString()}} {{report.createdAt.toLocaleTimeString()}}</strong></a>
+            </div>
+            <ng-template #noReports>
+                <p class="font-italic text-center text-muted pt-3">There are no new reports.</p>
+            </ng-template>
+            <div *ngIf="loading$" class="spinner-border d-block mx-auto my-4" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                New Members
+            </div>
+            <div class="list-group list-group-flush" *ngIf="data.members.length; else noReports">
+                <a class="list-group-item list-group-item-action" [routerLink]="['../members', member._id]" *ngFor="let member of data.members"><strong><i>{{userService.getName(
+                    member)}}</i></strong> joined Discord on
+                    <strong>{{member.discord.createdAt.toLocaleDateString()}} {{member.discord.createdAt.toLocaleTimeString()}}</strong></a>
+            </div>
+            <ng-template #noReports>
+                <p class="font-italic text-center text-muted pt-3">There are no new members.</p>
+            </ng-template>
+            <div *ngIf="loading$" class="spinner-border d-block mx-auto my-4" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+</div>

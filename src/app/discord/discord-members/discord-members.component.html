@@ -1,0 +1,48 @@
+<div class="container mt-4">
+  <br/>
+
+  <div class="form-group form-inline px-3">
+    <div class="my-3 col-12 col-md-5">
+      <div class="input-group">
+        <input class="form-control ml-2" type="text" name="searchTerm" placeholder="Search Members" [(ngModel)]="discordMembersListService.searchTerm"/>
+        <div class="input-group-append" *ngIf="discordMembersListService.loading$ | async">
+          <div class="input-group-text">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="sr-only">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th scope="col" sortable="name" class="selectable" (sort)="onSort($event)">Name <fa-icon [icon]="sort.column === 'name' && sort.direction !== '' ? (sort.direction === 'asc' ? 'sort-up' : 'sort-down') : 'sort'"></fa-icon></th>
+      <th scope="col" sortable="username" class="selectable" (sort)="onSort($event)">Discord Username <fa-icon [icon]="sort.column === 'name' && sort.direction !== '' ? (sort.direction === 'asc' ? 'sort-up' : 'sort-down') : 'sort'"></fa-icon></th>
+      <th scope="col" sortable="banned" class="selectable" (sort)="onSort($event)">Banned <fa-icon [icon]="sort.column === 'name' && sort.direction !== '' ? (sort.direction === 'asc' ? 'sort-up' : 'sort-down') : 'sort'"></fa-icon></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr class="selectable" *ngFor="let user of users$ | async" (click)="router.navigate(['/mods/members', user._id])">
+      <td><ngb-highlight [result]="user.name" [term]="discordMembersListService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.username" [term]="discordMembersListService.searchTerm"></ngb-highlight></td>
+      <td><ngb-highlight [result]="user.banned" [term]="discordMembersListService.searchTerm"></ngb-highlight></td>
+    </tr>
+    </tbody>
+  </table>
+  <p *ngIf="(users$ | async).length === 0" class="text-center">There are no users.</p>
+
+  <div class="d-flex justify-content-between p-2">
+    <ngb-pagination
+      [collectionSize]="total$ | async" [(page)]="discordMembersListService.page" [pageSize]="discordMembersListService.pageSize">
+    </ngb-pagination>
+
+    <select class="custom-select w-auto" name="pageSize" [(ngModel)]="discordMembersListService.pageSize">
+      <option [ngValue]="5">5 Members per Page</option>
+      <option [ngValue]="10">10 Members per Page</option>
+      <option [ngValue]="15">15 Members per Page</option>
+    </select>
+  </div>
+</div>

@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+  <a class="navbar-brand" routerLink="/">
+    <img src="../../../assets/img/vatpac-logo.png" height="45" class="d-inline-block pr-2" alt="">
+    <span class="h3">Discord</span>
+  </a>
+  <button class="navbar-toggler hidden-sm-up" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" [attr.aria-expanded]="navToggled" aria-label="Toggle navigation" (click)="toggleNavbar()">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="navbar-collapse collapse" id="navbarSupportedContent" [ngbCollapse]="!navToggled" [@collapse]="isNavbarCollapsedAnim">
+    <ul class="navbar-nav flex-sm-column flex-md-row ml-auto mt-sm-3 mt-md-0 text-center">
+      <li *ngIf="userService.loggedIn()" class="nav-item">
+        <a class="nav-link" routerLink="/" [routerLinkActiveOptions]="{exact: true}" routerLinkActive="active">Home</a>
+      </li>
+      <li *ngIf="userService.isDiscordModerator()" class="nav-item">
+        <a class="nav-link" routerLink="/mods" routerLinkActive="active">Moderation Panel</a>
+      </li>
+      <li class="nav-item">
+        <button *ngIf="!userService.loggedIn()" class="btn btn-link nav-link w-100" (click)="userService.login()">Log In</button>
+        <button *ngIf="userService.loggedIn()" class="btn btn-link nav-link text-danger w-100" (click)="userService.logout()">Log Out</button>
+      </li>
+    </ul>
+  </div>
+</nav>

@@ -1,0 +1,109 @@
+<div class="container d-flex align-items-center justify-content-center mt-4">
+    <ng-container *ngIf="!pageLoading$; else loader">
+        <ng-container *ngIf="(userService.currentUser | async); let user; else loader">
+            <div class="card w-75 py-4 px-3" *ngIf="(!user.discord || !user.discord.id); else linked">
+                <h4 class="text-center mt-2 mb-4">Link Your Discord Account</h4>
+                <div class="d-flex flex-column align-items-center my-2 mx-2 mx-sm-4">
+                    <h5 class="mb-2">Step 1: Joining The Server</h5>
+                    <p>Before you link your discord account, please make sure you are in the discord server: <a
+                            href="https://discord.gg/vrkvnG7" target="_blank">https://discord.gg/vrkvnG7</a></p>
+                    <a class="btn btn-outline-primary mt-2 mb-5 px-4" href="https://discord.gg/vrkvnG7" target="_blank">Join
+                        the Server</a>
+
+                    <h5 class="mb-2">Step 2: Linking Your Account</h5>
+                    <p>In order to receive the appropriate roles and access to the VATPAC Discord Server, you need to
+                        link your discord account. These roles will determine what channels you can
+                        interact with on the Discord Server and the commands you can execute.<br>
+                        Any changes to your ATC or pilot rating should be automatically reflected on the discord within
+                        24 hours, otherwise you can come back to this screen to manually update the permissions.</p>
+                    <button class="btn btn-outline-primary my-2 px-4"
+                            (click)="linkDiscord()"
+                            [disabled]="loading$">
+                        <span *ngIf="!loading$">Link Discord</span>
+                        <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status"
+                              aria-hidden="true">
+                            <span class="sr-only">Loading...</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <ng-template #linked>
+                <div class="card w-75 py-4 px-3" *ngIf="!allowed">
+                    <h4 class="text-center mt-2 mb-4">Unauthorised to Access VATPAC Discord</h4>
+                    <p class="my-2 mx-2 mx-sm-4">You are not allowed to enter the VATPAC Discord server. It might be
+                        because
+                        you
+                        do not qualify in section 3.1 of the VATPAC Discord Policy. If you feel this is incorrect,
+                        please
+                        contact <a href="mailto:it@vatpac.org">it@vatpac.org</a>.</p>
+                </div>
+                <ng-container *ngIf="allowed">
+                    <div class="row flex-wrap flex-lg-nowrap justify-content-around align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="card py-4 px-3 m-3">
+                                <h4 class="text-center mt-2 mb-4">Your Discord account is linked</h4>
+                                <div class="user card flex-row justify-content-around align-items-center w-100 py-3 px-2 mx-auto">
+                                    <img class="w-25 rounded-circle"
+                                         [src]="'https://cdn.discordapp.com/avatars/' + user.discord.id + '/' + user.discord.avatar + '.png'"
+                                         alt="">
+                                    <div class="w-50">
+                                        <h5>{{user.discord.username}}</h5>
+                                        <span class="text-muted">#{{user.discord.discriminator}}</span>
+                                    </div>
+                                </div>
+                                <p class="mt-4 mx-2 mx-sm-4">Your discord roles will be rechecked and updated every 24
+                                    hours but
+                                    you
+                                    can force
+                                    update using the button below.</p>
+                                <small class="text-muted text-center">NOTE: You can only use this update button once
+                                    every 24
+                                    hours.
+                                </small>
+                                <button class="btn btn-outline-primary mt-4 mb-2 mx-auto px-4 w-auto d-block"
+                                        (click)="update()"
+                                        [disabled]="!canUpdate(user.discord.last_update, user.discord.last_manual_update) || loading$">
+                            <span *ngIf="!loading$">{{canUpdate(user.discord.last_update,
+                                user.discord.last_manual_update) ? 'Update Discord Info' : 'Already Updated'}}</span>
+                                    <span *ngIf="loading$" class="spinner-border spinner-border-sm" role="status"
+                                          aria-hidden="true">
+                                <span class="sr-only">Loading...</span>
+                            </span>
+                                </button>
+                            </div>
+
+                            <div class="card py-4 px-3 m-3">
+                                <h5 class="text-center my-2">See something against the rules?</h5>
+                                <p class="px-3">It goes against the VATPAC Discord policy to make false accusations and
+                                    reports. Any false reports may lead to consequences.</p>
+
+                                <button class="btn btn-outline-primary mt-4 mb-2 mx-auto px-4 w-auto d-block"
+                                        role="button"
+                                        (click)="openReport()">Report It.
+                                </button>
+                                <small class="text-muted text-center">You can only make a report once every 5
+                                    minutes.</small>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-4 mod--container">
+                            <div class="card">
+                                <div class="card-header">
+                                    Current Discord Moderators
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item" *ngFor="let mod of mods">{{userService.getName(
+                                        mod)}}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+            </ng-template>
+        </ng-container>
+    </ng-container>
+    <ng-template #loader>
+    <span class="spinner-border spinner-border-lg mx-auto my-3" role="status" aria-hidden="true">
+      <span class="sr-only">Loading...</span>
+    </span>
+    </ng-template>
+</div>

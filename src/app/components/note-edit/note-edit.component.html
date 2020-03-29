@@ -1,0 +1,33 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">Note Panel</h4>
+  <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('cross-click')">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+  <div class="container d-flex flex-column justify-content-end">
+    <small class="text-muted text-right p-1">Characters remaining {{maxLength - content.value.length}}</small>
+    <textarea [formControl]="content" rows="10" [maxlength]="maxLength.toString()" class="form-control w-100"></textarea>
+    <small class="text-muted text-right p-1"><i>Created By </i> <strong>{{creator}}</strong></small>
+
+    <div *ngIf="extraFieldTitles.length" [formGroup]="extraFields">
+      <div formArrayName="fields" class="form-group" *ngFor="let field of fields.controls; let i = index">
+        <label [for]="'extraField' + i" class="w-100">{{extraFieldTitles[i]}}</label>
+
+        <div ngbDropdown class="d-inline-block" *ngIf="extraFieldKinds[i] === 'select' && extraFieldOptions.length > 0; else default">
+          <button class="btn btn-outline-primary" [id]="'extraField' + i" ngbDropdownToggle>{{(field.value || extraFieldTitles[i]) | titlecase}}</button>
+          <div ngbDropdownMenu>
+            <button ngbDropdownItem *ngFor="let option of extraFieldOptions[i]" (click)="field.setValue(option)">{{option | titlecase}}</button>
+          </div>
+        </div>
+
+        <ng-template #default>
+          <input type="text" class="form-control" [id]="'extraField' + i" [formControlName]="i">
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-dark" [disabled]="!content.valid" (click)="activeModal.close({content: content, extraFields: fields})">Save</button>
+</div>

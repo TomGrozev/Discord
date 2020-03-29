@@ -1,0 +1,15 @@
+.container {
+  min-height: 55vh;
+}
+
+.container > .card {
+  min-width: 290px;
+}
+
+.user {
+  max-width: 250px;
+}
+
+.mod--container {
+  min-width: 300px;
+}

@@ -1,0 +1,14 @@
+<div class="container d-flex justify-content-center align-items-center">
+  <div *ngIf="!userService.loggedIn()" class="card w-75 py-4 px-3">
+    <h4 class="text-center mt-2 mb-4">Login</h4>
+    <button class="btn btn-outline-primary mb-2 mx-auto px-4 w-auto" (click)="login()" [disabled]="loading$">
+      <span *ngIf="!loading$">VATSIM SSO</span>
+      <div *ngIf="loading$">
+        <span class="mx-2">Waiting for VATSIM</span>
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true">
+          <span class="sr-only">Loading...</span>
+        </span>
+      </div>
+    </button>
+  </div>
+</div>

@@ -1,0 +1,124 @@
+<div class="container mt-4" *ngIf="report">
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+                <table>
+                    <tbody>
+                    <tr>
+                        <td><strong>Subject</strong></td>
+                        <td>{{userService.getName(report.subject)}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Type</strong></td>
+                        <td>{{report.type}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reported On</strong></td>
+                        <td>{{formatDate(report.createdAt)}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Reported By</strong></td>
+                        <td>{{userService.getName(report.author)}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Description</strong></td>
+                        <td>{{report.content}}</td>
+                    </tr>
+                    </tbody>
+                </table>
+                <span *ngIf="report.resolved === 2"
+                      class="text-uppercase font-weight-bold h5 text-success">Resolved</span>
+                <span *ngIf="report.resolved === 1"
+                      class="text-uppercase font-weight-bold h5 text-warning">Pending</span>
+                <span *ngIf="report.resolved === 0"
+                      class="text-uppercase font-weight-bold h5 text-danger">Unresolved</span>
+            </div>
+            <div class="row justify-content-center mt-4">
+                <button *ngIf="report.resolved === 0 || ((userService.isDiscordAdmin() || userService.isAdmin()) && report.resolved === 1)"
+                        class="btn btn-success mx-1" (click)="resolve()">Mark as Resolved
+                </button>
+                <button *ngIf="report.resolved !== 0 && (userService.isDiscordAdmin() || userService.isAdmin())" class="btn btn-danger mx-1"
+                        (click)="unresolve()">Mark as Unresolved
+                </button>
+            </div>
+            <div class="clearfix">
+              <button class="btn btn-link d-flex align-items-center float-right" [disabled]="loadingWatch$"
+                      [class.text-primary]="watching"
+                      [class.text-secondary]="!watching" (click)="toggleWatching()" placement="auto"
+                      ngbTooltip="This option will subscribe you to notifications of changes to this report">
+                <div class="spinner-border text-muted mx-2" role="status" *ngIf="loadingWatch$">
+                  <span class="sr-only">Loading...</span>
+                </div>
+                {{watching ? 'Watching' : 'Not Watching'}}
+                <fa-icon icon="eye" size="2x" class="px-2"></fa-icon>
+              </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4" [formGroup]="notesParent">
+        <div class="card-header">Notes</div>
+        <div class="container pb-3" formArrayName="notes">
+            <div class="row justify-content-end px-3 pb-3">
+                <button class="btn btn-primary mt-3" type="button" *ngIf="userService.check('user.discord.report.note.create')"
+                        (click)="newNote()">
+                    <fa-icon icon="plus"></fa-icon>
+                    New Note
+                </button>
+            </div>
+            <div class="card overflow-hidden my-3" *ngFor="let note of notes.controls; let i = index"
+                 [formGroupName]="i">
+                <div *ngIf="asFormGroup(note); let group" class="p-3">
+                    <div class="d-flex justify-content-between">
+                        <p class="w-auto flex-grow-1">{{group.controls.content.value}}</p>
+                        <div>
+                            <button class="btn btn-info m-2" type="button"
+                                    *ngIf="userService.check('user.discord.report.note.update')" (click)="editNote(i)">
+                                <fa-icon icon="edit"></fa-icon>
+                                Edit
+                            </button>
+                            <button class="btn btn-danger m-2" type="button"
+                                    *ngIf="userService.check('user.discord.report.note.delete')"
+                                    (click)="deleteNote(confirmDeleteNote, i)">
+                                <fa-icon icon="trash"></fa-icon>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column">
+                        <small class="text-muted p-1"><i>Created By </i> <strong>{{userService.getName(
+                            group.controls.creator.value)}}</strong></small>
+                    </div>
+                </div>
+                <div *ngIf="loadingNotes.indexOf(i) !== -1" [@inOutAnimation]
+                     class="loader--wrapper position-absolute w-100 h-100 d-flex justify-content-center align-items-center">
+                    <div class="spinner-grow text-info" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <p class="text-center text-muted py-3" *ngIf="notes.length === 0">There are no notes for this report.</p>
+        </div>
+    </div>
+
+</div>
+
+<ng-template #confirmDeleteNote let-modal>
+    <div class="modal-header">
+        <h4 class="modal-title" id="modal-airports-title">Confirm delete this note?</h4>
+        <button type="button" class="close" aria-label="Close button" aria-describedby="modal-title"
+                (click)="modal.dismiss('cross-click')">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <p><strong>Are you sure you want to delete this note?</strong></p>
+        <p>All information associated to this note will be permanently deleted.
+            <span class="text-danger">This operation can not be undone.</span>
+        </p>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancel-click')">Cancel</button>
+        <button type="button" ngbAutofocus class="btn btn-danger" (click)="modal.close('ok-click')">Ok</button>
+    </div>
+</ng-template>
