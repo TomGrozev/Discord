@@ -1,4 +1,4 @@
-<div class="page">
+<div class="page" *ngIf="!(userService.loading | async); else loader">
   <comp-header></comp-header>
   <div class="body pb-4">
     <app-alert></app-alert>
@@ -6,3 +6,10 @@
   </div>
   <comp-footer></comp-footer>
 </div>
+<ng-template #loader>
+  <div class="vh-100 vw-100 d-flex justify-content-center align-items-center">
+    <span class="spinner-border spinner-border-lg" role="status" aria-hidden="true">
+      <span class="sr-only">Loading...</span>
+    </span>
+  </div>
+</ng-template>

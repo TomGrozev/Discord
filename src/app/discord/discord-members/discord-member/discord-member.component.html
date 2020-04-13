@@ -17,9 +17,12 @@
                     <label>Discord</label>
                     <div class="card d-flex flex-wrap flex-row justify-content-between align-items-center w-100 py-3 px-2">
                         <div class="col-12 col-md-5 d-flex justify-content-center">
-                            <img class="h-75 rounded-circle m-2"
-                                 src="https://cdn.discordapp.com/avatars/{{discord.controls.id.value}}/{{discord.controls.avatar.value}}.png"
-                                 alt="">
+                            <div class="img--wrapper discord-avatar">
+                                <img class="rounded-circle m-2"
+                                     [src]="avatarSrc"
+                                     (error)="avatarSrc='https://cdn.discordapp.com/embed/avatars/'+discord.controls.discriminator.value % 5+'.png'"
+                                     alt="">
+                            </div>
                             <div class="w-50 p-2">
                                 <h3 class="mt-4">{{discord.controls.username.value}}</h3>
                                 <span class="text-muted" *ngIf="discord.controls.discriminator.value">#{{discord.controls.discriminator.value}}</span>
@@ -37,26 +40,44 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group position-relative" *ngIf="userService.isDiscordAdmin() || userService.isAdmin()">
-                    <label>Discord Server Explicit Access</label>
-                    <div class="mt-2 mx-3">
-                        <p>
-                            <strong>Status: </strong>
-                            <span class="text-success" *ngIf="discord.controls.allowed.value">Explicit Access</span>
-                            <span class="text-warning"
-                                  *ngIf="!discord.controls.allowed.value">Implicit Access</span>
-                        </p>
+                <div [formGroup]="discord">
+                    <div class="form-group position-relative"
+                         *ngIf="userService.isDiscordAdmin() || userService.isAdmin()">
+                        <label>Discord Server Explicit Access</label>
+                        <div class="mt-2 mx-3">
+                            <p>
+                                <strong>Status: </strong>
+                                <span class="text-success" *ngIf="discord.controls.allowed.value">Explicit Access</span>
+                                <span class="text-warning"
+                                      *ngIf="!discord.controls.allowed.value">Implicit Access</span>
+                            </p>
 
-                        <div class="custom-control custom-switch" [formGroup]="discord">
-                            <input type="checkbox" class="custom-control-input" id="toggleAccess"
-                                   (change)="toggleAccess()" formControlName="allowed">
-                            <label class="custom-control-label" for="toggleAccess">Toggle Access</label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="toggleAccess"
+                                       (change)="toggleAccess()" formControlName="allowed" [disabled]="loadingAccess$">
+                                <label class="custom-control-label" for="toggleAccess">Toggle Access</label>
+                            </div>
+                        </div>
+                        <div *ngIf="loadingAccess$" [@inOutAnimation]
+                             class="loader--wrapper position-absolute w-100 h-100 d-flex justify-content-center align-items-center">
+                            <div class="spinner-grow text-info" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
                         </div>
                     </div>
-                    <div *ngIf="loadingAccess$" [@inOutAnimation]
-                         class="loader--wrapper position-absolute w-100 h-100 d-flex justify-content-center align-items-center">
-                        <div class="spinner-grow text-info" role="status">
-                            <span class="sr-only">Loading...</span>
+                    <div class="form-group position-relative"
+                         *ngIf="userService.isDiscordAdmin() || userService.isAdmin()">
+                        <label>Discord Server Nickname</label>
+                        <div class="row mt-2 mx-3">
+                            <input class="form-control my-2 mx-3 col-12 col-lg-7" [disabled]="loadingNickname$" type="text" formControlName="nickname" placeholder="Nickname">
+                            <button class="btn btn-success my-2 mx-2 col-12 col-lg-2" [disabled]="loadingNickname$ || discord.controls.nickname.value.length === 0" (click)="setNickname()">Set Nickname</button>
+                            <button class="btn btn-danger my-2 mx-2 col-12 col-lg-2" [disabled]="loadingNickname$ || discord.controls.nickname.value.length === 0" (click)="discord.controls.nickname.setValue(''); setNickname()">Reset</button>
+                        </div>
+                        <div *ngIf="loadingNickname$" [@inOutAnimation]
+                             class="loader--wrapper position-absolute w-100 h-100 d-flex justify-content-center align-items-center">
+                            <div class="spinner-grow text-info" role="status">
+                                <span class="sr-only">Loading...</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -155,4 +155,8 @@ export class DiscordService {
     public toggleAccess(userid: string): Observable<CoreResponse> {
         return this.http.post<CoreResponse>(url + '/discord/access/' + userid, {});
     }
+
+    public setNickname(userid: string, nickname): Observable<CoreResponse> {
+        return this.http.post<CoreResponse>(url + '/discord/nickname/' + userid, {nickname: nickname});
+    }
 }

@@ -1,5 +1,5 @@
 import {Component, OnInit} from '@angular/core';
-import {FormArray, FormControl, FormGroup, ValidationErrors, Validators} from '@angular/forms';
+import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {animate, style, transition, trigger} from '@angular/animations';
 import {ActivatedRoute, Router} from '@angular/router';
 import {AlertService} from '../../../services/alert.service';
@@ -50,12 +50,13 @@ export class DiscordMemberComponent implements OnInit {
             avatar: new FormControl({value: '', disabled: true}, Validators.required),
             discriminator: new FormControl({value: '', disabled: true}, Validators.required),
             allowed: new FormControl(false, Validators.required),
+            nickname: new FormControl('', Validators.maxLength(30)),
             ban: new FormGroup({
                 kind: new FormControl({value: '', disabled: true}, Validators.required),
                 reason: new FormControl({value: '', disabled: true}, Validators.required),
                 expires: new FormControl({value: new Date(), disabled: true}, Validators.required)
             }),
-          roles: new FormArray([])
+            roles: new FormArray([])
         }),
         mod_notes: new FormArray([])
     });
@@ -63,7 +64,10 @@ export class DiscordMemberComponent implements OnInit {
     id: string;
     loadingNotes = [];
     loadingAccess$ = false;
+    loadingNickname$ = false;
     loadingRoles$ = false;
+
+    avatarSrc = '';
 
     initialRoles$ = [];
 
@@ -89,6 +93,7 @@ export class DiscordMemberComponent implements OnInit {
                     this.discord.controls.id.setValue(res.body.member.discord.id);
                     this.discord.controls.discriminator.setValue(res.body.member.discord.discriminator);
                     this.discord.controls.allowed.setValue(res.body.member.discord.allowed || false);
+                    this.discord.controls.nickname.setValue(res.body.member.discord.nickname || '');
                     this.discord.controls.avatar.setValue(res.body.member.discord.avatar);
 
                     if (res.body.member.discord.ban) {
@@ -98,10 +103,10 @@ export class DiscordMemberComponent implements OnInit {
                     }
 
                     if (res.body.member.discord.roles) {
-                      this.initialRoles$ = res.body.member.discord.roles;
-                      for (const roleid of res.body.member.discord.roles) {
-                        this.discordRoles.push(new FormControl(roleid));
-                      }
+                        this.initialRoles$ = res.body.member.discord.roles;
+                        for (const roleid of res.body.member.discord.roles) {
+                            this.discordRoles.push(new FormControl(roleid));
+                        }
                     }
                 }
 
@@ -120,6 +125,10 @@ export class DiscordMemberComponent implements OnInit {
                         }
                     }
                 }
+
+                this.avatarSrc = 'https://cdn.discordapp.com/avatars/' +
+                    this.discord.controls.id.value + '/' +
+                    this.discord.controls.avatar.value + '.png';
 
                 valSet = true;
             } else {
@@ -155,19 +164,27 @@ export class DiscordMemberComponent implements OnInit {
     }
 
     arraysEqual(a, b) {
-      if (a === b) { return true; }
-      if (a == null || b == null) { return false; }
-      if (a.length !== b.length) { return false; }
+        if (a === b) {
+            return true;
+        }
+        if (a == null || b == null) {
+            return false;
+        }
+        if (a.length !== b.length) {
+            return false;
+        }
 
-      // If you don't care about the order of the elements inside
-      // the array, you should sort both arrays here.
-      // Please note that calling sort on an array will modify that array.
-      // you might want to clone your array first.
+        // If you don't care about the order of the elements inside
+        // the array, you should sort both arrays here.
+        // Please note that calling sort on an array will modify that array.
+        // you might want to clone your array first.
 
-      for (let i = 0; i < a.length; ++i) {
-        if (a[i] !== b[i]) { return false; }
-      }
-      return true;
+        for (let i = 0; i < a.length; ++i) {
+            if (a[i] !== b[i]) {
+                return false;
+            }
+        }
+        return true;
     }
 
     get timezone() {
@@ -179,7 +196,7 @@ export class DiscordMemberComponent implements OnInit {
     }
 
     get discordRoles() {
-      return this.discord.controls.roles as FormArray;
+        return this.discord.controls.roles as FormArray;
     }
 
     get ban() {
@@ -217,34 +234,58 @@ export class DiscordMemberComponent implements OnInit {
         });
     }
 
+    setNickname() {
+        if (!this.discord.controls.nickname.valid) {
+            return;
+        }
+
+        this.loadingNickname$ = true;
+
+        this.discordSerivce.setNickname(this.id, this.discord.controls.nickname.value).subscribe(res => {
+            res = new CoreResponse(res);
+
+            if (res.success()) {
+                if (res.body.nickname) {
+                    this.discord.controls.nickname.setValue(res.body.nickname);
+                }
+                this.alertService.add('success', 'Discord nickname set successfully');
+            } else {
+                this.alertService.add('danger', 'Error setting user discord nickname');
+            }
+            this.loadingNickname$ = false;
+        }, error => {
+            this.alertService.add('danger', 'Error setting user discord nickname');
+        });
+    }
+
     addDiscordRole(id: string) {
-      this.discordRoles.push(new FormControl(id));
+        this.discordRoles.push(new FormControl(id));
     }
 
     deleteDiscordRole(i) {
-      this.discordRoles.removeAt(i);
+        this.discordRoles.removeAt(i);
     }
 
     saveDiscordRoles() {
-      if (this.arraysEqual(this.discordRoles.getRawValue(), this.initialRoles$)) {
-        return this.alertService.add('danger', 'No roles selected');
-      }
-      this.loadingRoles$ = true;
-
-      this.discordSerivce.setRoles(this.id, this.discordRoles.getRawValue()).subscribe(res => {
-        res = new CoreResponse(res);
-
-        this.loadingRoles$ = false;
-        if (!res.success()) {
-          return this.alertService.add('danger', 'Error saving discord roles');
+        if (this.arraysEqual(this.discordRoles.getRawValue(), this.initialRoles$)) {
+            return this.alertService.add('danger', 'No roles selected');
         }
+        this.loadingRoles$ = true;
 
-        this.initialRoles$ = this.discordRoles.getRawValue();
-        this.alertService.add('success', 'Successfully saved discord roles for user');
-      }, error => {
-        this.loadingRoles$ = false;
-        this.alertService.add('danger', 'Error saving discord roles');
-      });
+        this.discordSerivce.setRoles(this.id, this.discordRoles.getRawValue()).subscribe(res => {
+            res = new CoreResponse(res);
+
+            this.loadingRoles$ = false;
+            if (!res.success()) {
+                return this.alertService.add('danger', 'Error saving discord roles');
+            }
+
+            this.initialRoles$ = this.discordRoles.getRawValue();
+            this.alertService.add('success', 'Successfully saved discord roles for user');
+        }, error => {
+            this.loadingRoles$ = false;
+            this.alertService.add('danger', 'Error saving discord roles');
+        });
     }
 
     unban() {

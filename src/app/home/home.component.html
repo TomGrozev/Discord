@@ -43,9 +43,12 @@
                             <div class="card py-4 px-3 m-3">
                                 <h4 class="text-center mt-2 mb-4">Your Discord account is linked</h4>
                                 <div class="user card flex-row justify-content-around align-items-center w-100 py-3 px-2 mx-auto">
-                                    <img class="w-25 rounded-circle"
-                                         [src]="'https://cdn.discordapp.com/avatars/' + user.discord.id + '/' + user.discord.avatar + '.png'"
-                                         alt="">
+                                    <div class="img--wrapper w-25">
+                                        <img class="rounded-circle"
+                                             [src]="avatarSrc(user.discord)"
+                                             (error)="avatarFailed = true"
+                                             alt="">
+                                    </div>
                                     <div class="w-50">
                                         <h5>{{user.discord.username}}</h5>
                                         <span class="text-muted">#{{user.discord.discriminator}}</span>
@@ -61,7 +64,7 @@
                                     hours.
                                 </small>
                                 <button class="btn btn-outline-primary mt-4 mb-2 mx-auto px-4 w-auto d-block"
-                                        (click)="update()"
+                                        (click)="update(user.discord.needs_refresh)"
                                         [disabled]="!canUpdate(user.discord.last_update, user.discord.last_manual_update) || loading$">
                             <span *ngIf="!loading$">{{canUpdate(user.discord.last_update,
                                 user.discord.last_manual_update) ? 'Update Discord Info' : 'Already Updated'}}</span>

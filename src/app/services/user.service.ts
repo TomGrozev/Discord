@@ -22,11 +22,15 @@ export class UserService {
     private jwt_token: BehaviorSubject<JWTToken>;
     private currentUserSubject: BehaviorSubject<User>;
     public currentUser: Observable<User>;
+    private loadingSubject: BehaviorSubject<boolean>;
+    public loading: Observable<boolean>;
 
     constructor(private httpBackend: HttpBackend, private router: Router) {
         this.jwt_token = new BehaviorSubject<JWTToken>(null);
         this.currentUserSubject = new BehaviorSubject<User>(JSON.parse(localStorage.getItem('current_user')));
         this.currentUser = this.currentUserSubject.asObservable();
+        this.loadingSubject = new BehaviorSubject<boolean>(true);
+        this.loading = this.loadingSubject.asObservable();
 
         if (this.currentJWT === null) {
             this.getJWT();
@@ -52,7 +56,6 @@ export class UserService {
     }
 
     public getUser() {
-        console.log(this.currentJWT);
         new HttpClient(this.httpBackend).get<CoreResponse>(url + '/sso/user', {
             withCredentials: true,
             headers: new HttpHeaders({
@@ -64,12 +67,14 @@ export class UserService {
                     res = new CoreResponse(res);
                     if (!res.success() || !res.body || !res.body.user) {
                         this.redirectToLogin();
+                        this.loadingSubject.next(false);
                         return;
                     }
 
-                    console.log(res.body.user);
                     this.currentUserSubject.next(res.body.user);
+                    this.loadingSubject.next(false);
                 }, error: err => {
+                    this.loadingSubject.next(false);
                     this.redirectToLogin();
                 }
             });
@@ -82,6 +87,7 @@ export class UserService {
             next: res => {
                 res = new CoreResponse(res);
                 if (!res.success() || !res.body || !res.body.jwt_token || !res.body.jwt_token_expiry) {
+                    this.loadingSubject.next(false);
                     this.redirectToLogin();
                     return;
                 }
@@ -99,6 +105,7 @@ export class UserService {
                 }, time >= 30000 ? time : 30000);
             },
             error: _ => {
+                this.loadingSubject.next(false);
                 this.redirectToLogin();
             }
         });
@@ -109,11 +116,15 @@ export class UserService {
     }
 
     public logout() {
-        this.jwt_token.next(null);
-
         return new HttpClient(this.httpBackend).get(`${url}/sso/logout`,
-            {withCredentials: true}).subscribe({
+            {
+                withCredentials: true,
+                headers: new HttpHeaders({
+                    'Authorization': `Bearer ${this.currentJWT.token}`
+                })
+            }).subscribe({
             complete: () => {
+                this.jwt_token.next(null);
                 localStorage.setItem('logout', String(Date.now()));
                 this.redirectToLogin();
             }

@@ -36,7 +36,7 @@
 
   <div class="d-flex justify-content-between p-2">
     <ngb-pagination
-      [collectionSize]="total$ | async" [(page)]="discordMembersListService.page" [pageSize]="discordMembersListService.pageSize">
+      [collectionSize]="total$ | async" [(page)]="discordMembersListService.page" [pageSize]="discordMembersListService.pageSize" [maxSize]="5" [rotate]="true" [boundaryLinks]="true">
     </ngb-pagination>
 
     <select class="custom-select w-auto" name="pageSize" [(ngModel)]="discordMembersListService.pageSize">

@@ -12,7 +12,7 @@ export class User {
   country: string;
   region: string;
   division: string;
-  discord: {id: string, username: string, discriminator: string, avatar: string, ban: {kind: string, reason: string, expires: Date}, allowed: boolean | null};
+  discord: {id: string, username: string, discriminator: string, avatar: string, ban: {kind: string, reason: string, expires: Date}, last_update: Date | string, last_manual_update: Date | string, allowed: boolean | null, nickname: string | null, needs_refresh: boolean};
   perms: {perm: Perm, level: number}[];
   staff_notes: {_id: string, content: string, creator: User}[];
   username: string;
